@@ -19,17 +19,38 @@ class TestAPICallDecorator(unittest.TestCase):
         method.__name__ = str(uuid4())
         self.assertEqual(api_call(method)(), method())
 
-    def test_error_code_map(self):
+    def test_error_code_map_raising(self):
         for code, exception in six.iteritems(error_code_map):
-            self._failure_method.side_effect = LaunchKeyAPIException({"error_code": code, "error_detail": ANY}, 400)
+            self._failure_method.side_effect = LaunchKeyAPIException(
+                {"error_code": code, "error_detail": "Detail"}, 400
+            )
             with self.assertRaises(exception):
                 api_call(self._failure_method)()
+
+    def test_error_code_map_detail_codes(self):
+        for code, exception in six.iteritems(error_code_map):
+            self._failure_method.side_effect = LaunchKeyAPIException(
+                {"error_code": code, "error_detail": "Detail"}, 400
+            )
+            try:
+                api_call(self._failure_method)()
+            except LaunchKeyAPIException, e:
+                self.assertEqual(e.message, "Detail")
+                self.assertEqual(e.error_code, code)
 
     def test_status_code_map(self):
         for code, exception in six.iteritems(status_code_map):
             self._failure_method.side_effect = LaunchKeyAPIException({}, code)
             with self.assertRaises(exception):
                 api_call(self._failure_method)()
+
+    def test_status_code_map_error_code(self):
+        for code, exception in six.iteritems(status_code_map):
+            self._failure_method.side_effect = LaunchKeyAPIException({}, code)
+            try:
+                api_call(self._failure_method)()
+            except LaunchKeyAPIException, e:
+                self.assertEqual("HTTP-{0}".format(code), e.error_code)
 
     def test_unexpected_error(self):
         self._failure_method.side_effect = LaunchKeyAPIException()

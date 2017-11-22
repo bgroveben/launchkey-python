@@ -60,48 +60,112 @@ class MismatchedTimeFenceTimezones(Exception):
 
 
 class LaunchKeyAPIException(Exception):
+    error_code = None
+
     """API Error (400+) was returned"""
     def __init__(self, message=None, status_code=None, reason=None, *args, **kwargs):
         super(LaunchKeyAPIException, self).__init__(message, *args, **kwargs)
         self.message = message
         self.status_code = status_code
         self.reason = reason
+        if self.error_code is None:
+            self.error_code = message['error_code'] if message and 'error_code' in message else None
 
 
 class InvalidParameters(LaunchKeyAPIException):
     """API Error ARG-001 - Parameter validation error"""
+    error_code = "ARG-001"
 
 
-class PolicyFailure(LaunchKeyAPIException):
-    """API Error A-AUT-P-405 - Auth creation failed due to user not passing policy"""
+class InvalidRoute(LaunchKeyAPIException):
+    """API Error ARG-002 - The requested route does not exist in the requested path + method"""
+    error_code = "ARG-002"
+
+
+class ServiceNameTaken(LaunchKeyAPIException):
+    """API Error SVC-001 - The requested Service name is already in use. Service names are unique."""
+    error_code = "SVC-001"
 
 
 class InvalidPolicyInput(LaunchKeyAPIException):
-    """API Error APP-002 - The input auth policy is not valid"""
+    """API Error SVC-002 - The input auth policy is not valid"""
+    error_code = "SVC-002"
 
 
-class Unauthorized(LaunchKeyAPIException):
-    """Generic API 401 Error - Authentication was denied. Likely an invalid key."""
+class PolicyFailure(LaunchKeyAPIException):
+    """API Error SVC-003 - Auth creation failed due to user not passing policy"""
+    error_code = "SVC-003"
 
 
-class Forbidden(LaunchKeyAPIException):
-    """Generic API 403 Error"""
+class ServiceNotFound(LaunchKeyAPIException):
+    """API Error SVC-004 - The requested Service does not exist. Likely invalid UUID or the service has been removed."""
+    error_code = "SVC-004"
 
 
-class EntityNotFound(LaunchKeyAPIException):
-    """Generic API 404 Error - Entity was not found"""
+class InvalidPublicKey(LaunchKeyAPIException):
+    """API Error KEY-001 - The public key you supplied is not valid."""
+    error_code = "KEY-001"
 
 
-class RequestTimedOut(LaunchKeyAPIException):
-    """Generic API 408 Error - Request timed out"""
+class PublicKeyAlreadyInUse(LaunchKeyAPIException):
+    """API Error KEY-002 - The public key you supplied already exists for the requested entity.
+    It cannot be added again."""
+    error_code = "KEY-002"
 
 
-class RateLimited(LaunchKeyAPIException):
-    """Generic API 429 Error - Rate Limited"""
+class PublicKeyDoesNotExist(LaunchKeyAPIException):
+    """API Error KEY-003 - The key_id you supplied could not be found."""
+    error_code = "KEY-003"
+
+
+class LastRemainingKey(LaunchKeyAPIException):
+    """API Error KEY-004 - The last remaining public key cannot be removed."""
+    error_code = "KEY-004"
+
+
+class DirectoryNameInUse(LaunchKeyAPIException):
+    """API Error ORG-003 - The input Directory name is already in use."""
+    error_code = "ORG-003"
+
+
+class LastRemainingSDKKey(LaunchKeyAPIException):
+    """API Error ORG-005 - The last remaining Authenticator SDK Key cannot be removed."""
+    error_code = "ORG-005"
+
+
+class InvalidSDKKey(LaunchKeyAPIException):
+    """API Error ORG-006 - The Authenticator SDK Key you supplied does not belong to the referenced Directory"""
+    error_code = "ORG-006"
 
 
 class InvalidDirectoryIdentifier(LaunchKeyAPIException):
     """API Error DIR-001 - The input directory identifier was invalid"""
+    error_code = "DIR-001"
+
+
+class Unauthorized(LaunchKeyAPIException):
+    """Generic API 401 Error - Authentication was denied. Likely an invalid key."""
+    error_code = "HTTP-401"
+
+
+class Forbidden(LaunchKeyAPIException):
+    """Generic API 403 Error"""
+    error_code = "HTTP-403"
+
+
+class EntityNotFound(LaunchKeyAPIException):
+    """Generic API 404 Error - Entity was not found"""
+    error_code = "HTTP-404"
+
+
+class RequestTimedOut(LaunchKeyAPIException):
+    """Generic API 408 Error - Request timed out"""
+    error_code = "HTTP-408"
+
+
+class RateLimited(LaunchKeyAPIException):
+    """Generic API 429 Error - Rate Limited"""
+    error_code = "HTTP-429"
 
 
 class UnexpectedAPIResponse(LaunchKeyAPIException):
@@ -130,43 +194,3 @@ class NoIssuerKey(LaunchKeyAPIException):
 
 class InvalidJWTResponse(LaunchKeyAPIException):
     """JWT Response is not in a valid format"""
-
-
-class InvalidRoute(LaunchKeyAPIException):
-    """The requested route does not exist in the requested path + method"""
-
-
-class ServiceNameTaken(LaunchKeyAPIException):
-    """The requested Service name is already in use. Service names are unique."""
-
-
-class ServiceNotFound(LaunchKeyAPIException):
-    """The requested Service does not exist. Likely invalid UUID or the service has been removed."""
-
-
-class PublicKeyAlreadyInUse(LaunchKeyAPIException):
-    """The public key you supplied already exists for the requested entity. It cannot be added again."""
-
-
-class InvalidPublicKey(LaunchKeyAPIException):
-    """The public key you supplied is not valid."""
-
-
-class PublicKeyDoesNotExist(LaunchKeyAPIException):
-    """The key_id you supplied could not be found."""
-
-
-class LastRemainingKey(LaunchKeyAPIException):
-    """The last remaining public key cannot be removed."""
-
-
-class LastRemainingSDKKey(LaunchKeyAPIException):
-    """The last remaining Authenticator SDK Key cannot be removed."""
-
-
-class InvalidSDKKey(LaunchKeyAPIException):
-    """The Authenticator SDK Key you supplied does not belong to the referenced Directory"""
-
-
-class DirectoryNameInUse(LaunchKeyAPIException):
-    """The input Directory name is already in use."""
